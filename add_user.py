@@ -9,7 +9,13 @@
 import hashlib, uuid
 
 user = input("Enter a username: ")
-password = input("Enter a password: ")
+password = input("Enter a password 8-64 characters long: ")
+passChk = False
+while passChk == False:
+    if(len(password) > 8 and len(password) < 64):
+        passChk = True
+    else:
+        password = input("Password is too long or too short. Enter a password 8-64 characters long: ")
 
 # TODO: Create a salt and hash the password
 salt = uuid.uuid4().hex
