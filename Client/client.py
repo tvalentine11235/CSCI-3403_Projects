@@ -1,16 +1,11 @@
 """
     client.py - Connect to an SSL server
-
     CSCI 3403
     Authors: Matt Niemiec and Abigail Fernandes
     Number of lines of code in solution: 117
         (Feel free to use more or less, this
         is provided as a sanity check)
-
     Put your team members' names:
-
-
-
 """
 
 import socket
@@ -41,7 +36,7 @@ def encrypt_handshake(session_key):
     # TODO: Implement this function
 
     paddedKey = pad_message(str(session_key))
-    f = open('../server/serverKey.pub')
+    f = open('../Server/Keys.pub')
     pubKey = RSA.importKey(f.read())
     encryptedKey = pubKey.encrypt(session_key, 32)[0]
     return encryptedKey
@@ -110,6 +105,9 @@ def main():
         send_message(sock, encrypted_message)
 
         # TODO: Receive and decrypt response from server
+        msg = receive_message(sock)
+        msg = decrypt_message(msg,key).decode('utf-8')
+        print(msg)
     finally:
         print('closing socket')
         sock.close()
