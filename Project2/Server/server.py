@@ -108,37 +108,45 @@ def main():
 
                 # Receive encrypted message from client
                 ciphertext_message = receive_message(connection)
-                print("Ciphertext Message:",ciphertext_message)
 
-                # TODO: Decrypt message from client
+                # Decrypt message from client
                 plaintext_message = decrypt_message(ciphertext_message, plaintext_key)
                 plaintext_message = plaintext_message.decode('utf-8')
-                print("Plaintext Message:",plaintext_message)
                 new = plaintext_message.split()
-                print("new:", new)
-                username = new[0]
-                password = new[1]
-                print('username:', username, 'password:', password)
-                f = open("../passfile.txt",'r')
-                un_salt_pass = []
-                for line in f:
-                    un_salt_pass.append(line.split('\t'))
-                for user in un_salt_pass:
-                    if username == user[0]:
-                        enc_pass = hashlib.sha512((password + user[1]).encode('utf-8')).hexdigest()
-                        print(enc_pass)
-                        print(user[2])
-                        if enc_pass == user[2]:
-                            print('match')
-
                 
-                
-                # TODO: Split response from user into the username and password
+                # Check that both username and password fields have been populated to avoid seg faults!
+                if len(new) is not 2:
+                    noauth = encrypt_message("Please Enter Both Username and Password",plaintext_key)
+                    print("sending encrypted unauthentic")
+                    send_message(connection,noauth)
 
-                # TODO: Encrypt response to client
-
-                # Send encrypted response
-                #send_message(connection, ciphertext_response)
+                # Validate username and password
+                else:
+                    username = new[0]
+                    password = new[1]
+                    print('username:', username, 'password:', password)
+                    f = open("../passfile.txt",'r')
+                    un_salt_pass = []
+                    match = False
+                    # Each line in f will be a user, salt, and hashed password
+                    for line in f:
+                        un_salt_pass.append(line.split('\t'))
+                    # check usernames and salt+password hash value
+                    for user in un_salt_pass:
+                        if username == user[0]:
+                            enc_pass = hashlib.sha512((password + user[1]).encode('utf-8')).hexdigest()
+                            # strip the \n from the end of the saved hashed password 
+                            if enc_pass == user[2].rstrip():
+                                match = True
+                                break
+                    if match is True:
+                        auth = encrypt_message("User Successfully Authenticated",plaintext_key)
+                        print("sending encrypted authentic")
+                        send_message(connection,auth)
+                    else:
+                        noauth = encrypt_message("Invalid Username or Password",plaintext_key)
+                        print("sending encrypted unauthentic")
+                        send_message(connection,noauth)
             finally:
                 # Clean up the connection
                 connection.close()

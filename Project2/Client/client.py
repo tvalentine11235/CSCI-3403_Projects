@@ -105,6 +105,9 @@ def main():
         send_message(sock, encrypted_message)
 
         # TODO: Receive and decrypt response from server
+        msg = receive_message(sock)
+        msg = decrypt_message(msg,key).decode('utf-8')
+        print(msg)
     finally:
         print('closing socket')
         sock.close()
